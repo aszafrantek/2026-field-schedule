@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H2 2026 Territory Schedule</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f5f7; color: #1a1a2e; padding: 24px; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; color: #1a1a2e; }
+  .subtitle { font-size: 13px; color: #666; margin-bottom: 24px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; }
+  .dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+  .dot-fixed   { background: #2d6a4f; }
+  .dot-jake    { background: #e76f51; }
+  .dot-evan    { background: #f4a261; }
+  .dot-doug    { background: #a8dadc; }
+  .dot-ne      { background: #457b9d; }
+  .dot-company { background: #6c5ce7; }
+  .dot-peer    { background: #b5838d; }
+  .dot-pto     { background: #ccc; }
+  .dot-home    { background: #e9ecef; border: 1px solid #ced4da; }
+
+  .month-block { margin-bottom: 28px; }
+  .month-title { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #444; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #ddd; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 6px 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #888; background: #fff; border-bottom: 1px solid #e0e0e0; }
+  td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; vertical-align: top; background: #fff; }
+  tr:last-child td { border-bottom: none; }
+
+  .week-label { font-weight: 600; white-space: nowrap; color: #555; font-size: 12px; }
+  .days { font-size: 11px; color: #999; }
+
+  .tag {
+    display: inline-block; padding: 3px 9px; border-radius: 4px;
+    font-size: 12px; font-weight: 600; white-space: nowrap;
+  }
+  .tag-fixed   { background: #d8f3dc; color: #1b4332; }
+  .tag-jake    { background: #ffe8e0; color: #9b3a1e; }
+  .tag-evan    { background: #fff0e0; color: #7a4a10; }
+  .tag-doug    { background: #e0f4f5; color: #1a4a4d; }
+  .tag-ne      { background: #dbeafe; color: #1e3a5f; }
+  .tag-company { background: #ede7ff; color: #3b1f7a; }
+  .tag-peer    { background: #f5e0e4; color: #6b2535; }
+  .tag-pto     { background: #f0f0f0; color: #888; }
+  .tag-home    { background: #f8f9fa; color: #555; border: 1px solid #e0e0e0; }
+  .tag-wfh     { background: #e8f4ea; color: #1b5e20; border: 1px solid #c8e6c9; }
+  .tag-squeeze { background: #fff7cd; color: #7a5c00; }
+
+  .note { font-size: 12px; color: #555; margin-top: 3px; }
+  .note-flag { font-size: 11px; color: #e67e22; font-weight: 600; }
+  .note-warn  { font-size: 11px; color: #c0392b; font-weight: 600; }
+
+  .ne-counter { display: inline-block; margin-left: 8px; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 3px; }
+  .ne-good { background: #dbeafe; color: #1e3a5f; }
+  .ne-warn { background: #fff3cd; color: #856404; }
+
+  .summary { background: #fff; border-radius: 8px; padding: 18px 20px; margin-top: 8px; display: flex; flex-wrap: wrap; gap: 20px; }
+  .stat-group { flex: 1; min-width: 180px; }
+  .stat-group h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #888; margin-bottom: 8px; }
+  .stat-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; border-bottom: 1px solid #f5f5f5; gap: 12px; }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-val { font-weight: 700; color: #1a1a2e; white-space: nowrap; }
+  .check { color: #2d6a4f; }
+  .warn  { color: #e67e22; }
+  .bad   { color: #c0392b; }
+
+  .month-summary { font-size: 11px; color: #888; margin-top: 6px; font-style: italic; }
+  .month-summary .ne-ok  { color: #457b9d; font-weight: 700; }
+  .month-summary .ne-short { color: #c0392b; font-weight: 700; }
+
+  /* Logistics badges */
+  .log-cell { white-space: nowrap; vertical-align: middle; padding-top: 10px; }
+  .log-item {
+    display: inline-flex; align-items: center; gap: 3px;
+    cursor: pointer; font-size: 11px; font-weight: 600;
+    padding: 3px 7px; border-radius: 4px; margin: 2px 1px;
+    background: #f5f5f5; color: #aaa; border: 1px solid #e0e0e0;
+    user-select: none; transition: background .12s, color .12s, border-color .12s;
+  }
+  .log-item:hover { background: #e8f5e9; border-color: #a5d6a7; color: #388e3c; }
+  .log-item.log-done { background: #e8f5e9; color: #2e7d32; border-color: #66bb6a; }
+  .log-item .log-check { font-size: 10px; opacity: 0; transition: opacity .12s; }
+  .log-item.log-done .log-check { opacity: 1; }
+</style>
+</head>
+<body>
+
+<h1>H2 2026 Field Schedule</h1>
+<p class="subtitle">Travel pattern: depart Mon night · field Tue–Thu · home Thu night &nbsp;|&nbsp; Monthly goal: 1 team visit · 2 NE territory · 1 WFH &nbsp;·&nbsp; Exceptions: July (full), September (PTO), December (PTO)</p>
+
+<div class="legend">
+  <div class="legend-item"><div class="dot dot-company"></div> Company Event</div>
+  <div class="legend-item"><div class="dot dot-fixed"></div> Fixed Event</div>
+  <div class="legend-item"><div class="dot dot-peer"></div> Peer PM Support</div>
+  <div class="legend-item"><div class="dot dot-jake"></div> Mid-Atlantic · Jake (NC/SC/VA)</div>
+  <div class="legend-item"><div class="dot dot-evan"></div> Deep South · Evan (GA/LA/MS/AL)</div>
+  <div class="legend-item"><div class="dot dot-doug"></div> NE Corridor · Doug (WV/PA/NY/NJ/DE/MD)</div>
+  <div class="legend-item"><div class="dot dot-ne"></div> New England (Own Territory)</div>
+  <div class="legend-item"><div class="dot dot-wfh"></div> WFH</div>
+  <div class="legend-item"><div class="dot dot-home"></div> Home / Admin</div>
+  <div class="legend-item"><div class="dot dot-pto"></div> PTO</div>
+</div>
+
+<!-- ── JULY ── -->
+<div class="month-block">
+  <div class="month-title">July 2026 <span class="ne-counter ne-warn">1 NE · Portland · Jake Q3 visit · Jake+Evan squeeze</span></div>
+  <table>
+    <thead>
+      <tr><th style="width:110px">Week of</th><th style="width:160px">Type</th><th>Location / Activity</th><th style="width:140px">Logistics</th></tr>
+    </thead>
+    <tbody>
+      <tr data-week="jul-6">
+        <td><div class="week-label">Mon Jul 6</div><div class="days">Jul 7–10</div></td>
+        <td><span class="tag tag-ne">New England</span></td>
+        <td>
+          <div><strong>Own territory</strong> — customer meetings, pipeline building</div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="jul-13">
+        <td><div class="week-label">Mon Jul 13</div><div class="days">Jul 14–17</div></td>
+        <td><span class="tag tag-peer">Peer PM Event</span></td>
+        <td>
+          <div><strong>Portland, OR</strong> — TopGolf event w/ peer Partner Manager</div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="jul-20">
+        <td><div class="week-label">Mon Jul 20</div><div class="days">Jul 21–24</div></td>
+        <td><span class="tag tag-jake">Mid-Atlantic (Jake)</span></td>
+        <td>
+          <div><strong>Winston-Salem, NC</strong> — event prep / prospecting for Jake's TopGolf the following week</div>
+          <div class="note">Working in Jake's territory independently — Jake will not be present</div>
+          <div class="note">✦ Q3 Jake visit — <strong class="check">COVERED</strong></div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="jul-27">
+        <td><div class="week-label">Mon Jul 27</div><div class="days">Jul 28–Aug 1</div></td>
+        <td><span class="tag tag-squeeze">Jake + Evan (Event Squeeze)</span></td>
+        <td>
+          <div><strong>Greensboro, NC (Jake) Tue → Mobile, AL (Evan) Thu</strong></div>
+          <div class="note">Extended week: depart Mon night, return Fri · fly Greensboro → Mobile Wed (likely via ATL or CLT)</div>
+          <div class="note">TopGolf Greensboro (Jake/Mid-Atlantic) Tue · TopGolf Mobile (Evan/Deep South) Thu</div>
+          <div class="note">Evan's first TopGolf event as your direct report · Jake Q3 event + Evan Q3 event in one trip</div>
+          <div class="note">✦ Q3 Jake event #1 — <strong class="check">COVERED</strong> &nbsp;|&nbsp; ✦ Q3 Evan event #1 — <strong class="check">COVERED</strong></div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="month-summary">July: NE (7/6) · Portland peer (7/13) · Jake Q3 territory (7/20) · Jake+Evan squeeze Greensboro+Mobile (7/27) · Jake Q3 event #1 ✓ · Evan Q3 event #1 ✓ · 3 overnight trips, no WFH week this month</div>
+</div>
+
+<!-- ── AUGUST ── -->
+<div class="month-block">
+  <div class="month-title">August 2026 <span class="ne-counter ne-warn">1 NE · Summit · Doug Q3 · Knoxville · Evan Atlanta</span></div>
+  <table>
+    <thead>
+      <tr><th style="width:110px">Week of</th><th style="width:160px">Type</th><th>Location / Activity</th><th style="width:140px">Logistics</th></tr>
+    </thead>
+    <tbody>
+      <tr data-week="aug-3">
+        <td><div class="week-label">Mon Aug 3</div><div class="days">Aug 4–7</div></td>
+        <td><span class="tag tag-ne">New England</span></td>
+        <td>
+          <div><strong>Own territory</strong> — pipeline building, customer meetings</div>
+          <div class="note">Recovery week from July travel</div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="aug-10">
+        <td><div class="week-label">Mon Aug 10</div><div class="days">Aug 11–14</div></td>
+        <td><span class="tag tag-company">Company Event</span></td>
+        <td>
+          <div><strong>Houston, TX</strong> — Sales Summit (all-hands)</div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="aug-17">
+        <td><div class="week-label">Mon Aug 17</div><div class="days">Aug 18–21</div></td>
+        <td><span class="tag tag-doug">NE Corridor (Doug)</span></td>
+        <td>
+          <div><strong>National Harbor, MD</strong> — STX Expo w/ WorldPAC + TopGolf event Wed 8/19</div>
+          <div class="note">Extended week: Sun departure to home — STX Expo runs through the weekend</div>
+          <div class="note">TopGolf Wed 8/19: you lead so Doug can observe event execution firsthand</div>
+          <div class="note">✦ Q3 Doug visit — <strong class="check">COVERED</strong></div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="aug-24">
+        <td><div class="week-label">Mon Aug 24</div><div class="days">Aug 25–28</div></td>
+        <td><span class="tag tag-peer">Peer PM Support</span></td>
+        <td>
+          <div><strong>Knoxville, TN</strong> — TopGolf event Tue 8/26</div>
+          <div class="note">Attending peer PM's event — networking, regional partner visibility</div>
+          <div class="note">Outside your direct reports' territories · Knoxville outside Evan's Deep South footprint</div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="aug-31">
+        <td><div class="week-label">Mon Aug 31</div><div class="days">Sep 1–4 ★</div></td>
+        <td><span class="tag tag-evan">Deep South (Evan)</span></td>
+        <td>
+          <div><strong>Atlanta, GA</strong> — Evan territory field week · ride-along, pipeline coaching</div>
+          <div class="note">★ Field days land in September · depart Sun night, return Thu/Fri</div>
+          <div class="note">Atlanta is Evan's territory hub — strong partner ecosystem in GA</div>
+          <div class="note">✦ Q3 Evan additional territory coverage — <strong class="check">COVERED</strong></div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="month-summary">August: NE (8/3) · Summit (8/10) · Doug Q3 National Harbor (8/17) · Knoxville peer (8/24) · Evan Atlanta Q3 territory (8/31 ★) · Q3 all visits covered</div>
+</div>
+
+<!-- ── SEPTEMBER ── -->
+<div class="month-block">
+  <div class="month-title">September 2026 <span class="ne-counter ne-warn">NE · Doug Parsippany event · PTO</span></div>
+  <table>
+    <thead>
+      <tr><th style="width:110px">Week of</th><th style="width:160px">Type</th><th>Location / Activity</th><th style="width:140px">Logistics</th></tr>
+    </thead>
+    <tbody>
+      <tr data-week="sep-7">
+        <td><div class="week-label">Mon Sep 7</div><div class="days">Sep 8–11</div></td>
+        <td><span class="tag tag-ne">New England</span></td>
+        <td>
+          <div><strong>Own territory</strong> — NE field week · Labor Day week (Mon holiday)</div>
+          <div class="note">Critical NE field time before the final push into PTO</div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="sep-14">
+        <td><div class="week-label">Mon Sep 14</div><div class="days">Sep 15–18</div></td>
+        <td><span class="tag tag-doug">NE Corridor (Doug)</span></td>
+        <td>
+          <div><strong>Parsippany, NJ</strong> — TopGolf event Wed 9/16 w/ Nexpart partners</div>
+          <div class="note">Attend with Doug · ride-along + partner relationship visibility</div>
+          <div class="note">✦ Q3 Doug event #2 — <strong class="check">COVERED</strong></div>
+          <div class="note">💡 WFH tip: Parsippany is 3–4 hrs from NE — work Mon in own territory, depart Mon night</div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="sep-21">
+        <td><div class="week-label">Mon Sep 21</div><div class="days">Sep 22–25</div></td>
+        <td><span class="tag tag-pto">PTO</span></td>
+        <td><div>—</div></td>
+        <td class="log-cell"></td>
+      </tr>
+      <tr data-week="sep-28">
+        <td><div class="week-label">Mon Sep 28</div><div class="days">Sep 29–Oct 2</div></td>
+        <td><span class="tag tag-pto">PTO</span></td>
+        <td><div>—</div></td>
+        <td class="log-cell"></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="month-summary">September: NE (9/7) · Doug Parsippany event #2 (9/14) · 2 PTO · Jake Q3 = Greensboro only (Aaron at Evan Mobile event); Evan Q3 = Mobile event + Atlanta field ✓; Doug Q3 = 2 events ✓</div>
+</div>
+
+<!-- ── OCTOBER ── -->
+<div class="month-block">
+  <div class="month-title">October 2026 <span class="ne-counter ne-good">✓ WFH · Jake+Doug events · 2 NE</span></div>
+  <table>
+    <thead>
+      <tr><th style="width:110px">Week of</th><th style="width:160px">Type</th><th>Location / Activity</th><th style="width:140px">Logistics</th></tr>
+    </thead>
+    <tbody>
+      <tr data-week="oct-5">
+        <td><div class="week-label">Mon Oct 5</div><div class="days">Oct 6–9</div></td>
+        <td><span class="tag tag-wfh">WFH</span></td>
+        <td>
+          <div><strong>Work from home</strong> — Q4 kickoff planning, pipeline reset, team prep</div>
+          <div class="note">First week back from PTO — admin, forecasting, Q4 strategy before hitting the road</div>
+        </td>
+        <td class="log-cell"></td>
+      </tr>
+      <tr data-week="oct-12">
+        <td><div class="week-label">Mon Oct 12</div><div class="days">Oct 13–17</div></td>
+        <td><span class="tag tag-squeeze">Jake + Doug (Event Squeeze)</span></td>
+        <td>
+          <div><strong>Richmond, VA (Jake) Tue → Germantown, MD (Doug) Thu</strong></div>
+          <div class="note">Extended week: depart Mon night, return Fri · ~2 hrs Richmond → Germantown</div>
+          <div class="note">TopGolf Richmond (Jake/Mid-Atlantic) Tue · TopGolf Germantown (Doug/NE Corridor) Thu</div>
+          <div class="note">Mild October weather in VA/MD · cross-territory, two different reports in one trip</div>
+          <div class="note">📋 Prospecting: Jake wk 9/28 (PTO) + 10/5 (WFH) · Doug wk 9/28 (PTO) + 10/5 (WFH) — both prospect independently</div>
+          <div class="note">✦ Q4 Jake event #1 — <strong class="check">COVERED</strong> &nbsp;|&nbsp; ✦ Q4 Doug event #1 — <strong class="check">COVERED</strong></div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="oct-19">
+        <td><div class="week-label">Mon Oct 19</div><div class="days">Oct 20–23</div></td>
+        <td><span class="tag tag-ne">New England</span></td>
+        <td>
+          <div><strong>Own territory</strong> — NE field week #1</div>
+          <div class="note">📋 Prospecting week #1 for Evan (New Orleans) Nov 9 event — Evan prospecting independently in his market</div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="oct-26">
+        <td><div class="week-label">Mon Oct 26</div><div class="days">Oct 27–30</div></td>
+        <td><span class="tag tag-ne">New England</span></td>
+        <td>
+          <div><strong>Own territory</strong> — NE field week #2</div>
+          <div class="note">📋 Prospecting week #2 for Evan (New Orleans) Nov 9 event — Evan prospecting independently in his market</div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="month-summary">October: WFH (10/5) · Richmond+Germantown squeeze — Jake Q4 event #1 + Doug Q4 event #1 (10/12) · NE + prospecting #1 for Evan Nov 9 (10/19) · NE + prospecting #2 for Evan Nov 9 (10/26) · <span class="ne-ok">✓ 1 event per rep in Oct — rule satisfied</span></div>
+</div>
+
+<!-- ── NOVEMBER ── -->
+<div class="month-block">
+  <div class="month-title">November 2026 <span class="ne-counter ne-good">SEMA · Evan Q4 event · 1 NE · Thanksgiving ✓</span></div>
+  <table>
+    <thead>
+      <tr><th style="width:110px">Week of</th><th style="width:160px">Type</th><th>Location / Activity</th><th style="width:140px">Logistics</th></tr>
+    </thead>
+    <tbody>
+      <tr data-week="nov-2">
+        <td><div class="week-label">Mon Nov 2</div><div class="days">Nov 3–6</div></td>
+        <td><span class="tag tag-fixed">Industry Event</span></td>
+        <td>
+          <div><strong>Las Vegas, NV</strong> — SEMA Show</div>
+          <div class="note">Annual industry event · key networking and product exposure</div>
+          <div class="note">📋 Prospecting week #2 for Evan (New Orleans) Nov 9 event — Evan prospecting independently</div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="nov-9">
+        <td><div class="week-label">Mon Nov 9</div><div class="days">Nov 10–13</div></td>
+        <td><span class="tag tag-evan">Deep South (Evan)</span></td>
+        <td>
+          <div><strong>New Orleans, LA</strong> — Evan's TopGolf event</div>
+          <div class="note">Covers western portion of Evan's territory (LA market)</div>
+          <div class="note">📋 Prospecting confirmed: Evan in New Orleans wk 10/19 + 10/26</div>
+          <div class="note">✦ Q4 Evan event #1 — <strong class="check">COVERED</strong></div>
+          <div class="note note-flag">⚑ Doug Q4 event #2 TBD — Pittsburgh PA is the natural target; coordinate timing with Doug</div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="nov-16">
+        <td><div class="week-label">Mon Nov 16</div><div class="days">Nov 17–20</div></td>
+        <td><span class="tag tag-ne">New England</span></td>
+        <td>
+          <div><strong>Own territory</strong> — NE field push before Thanksgiving</div>
+          <div class="note">📋 Prospecting week #1 for Jake (Greenville SC) + Evan (Atlanta) Dec 14 events — reps in their own markets independently</div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="nov-23">
+        <td><div class="week-label">Mon Nov 23</div><div class="days">Nov 24–26</div></td>
+        <td><span class="tag tag-home">Home</span></td>
+        <td>
+          <div>Thanksgiving week — home (Thu 11/26 holiday)</div>
+        </td>
+        <td class="log-cell"></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="month-summary">November: SEMA (11/2) · Evan New Orleans Q4 event #1 (11/9) · NE + prospecting #1 for Dec 14 (11/16) · Thanksgiving home (11/23) · <span class="ne-ok">✓ 1 event per rep in Nov — rule satisfied · Doug Q4 event #2 TBD</span></div>
+</div>
+
+<!-- ── DECEMBER ── -->
+<div class="month-block">
+  <div class="month-title">December 2026 <span class="ne-counter ne-good">✓ 2 NE · Jake+Evan squeeze · 2 PTO</span></div>
+  <table>
+    <thead>
+      <tr><th style="width:110px">Week of</th><th style="width:160px">Type</th><th>Location / Activity</th><th style="width:140px">Logistics</th></tr>
+    </thead>
+    <tbody>
+      <tr data-week="nov-30">
+        <td><div class="week-label">Mon Nov 30</div><div class="days">Dec 1–4</div></td>
+        <td><span class="tag tag-ne">New England</span></td>
+        <td>
+          <div><strong>Own territory</strong> — transition back from Thanksgiving, local year-end push</div>
+          <div class="note">📋 Prospecting week #2 for Jake (Greenville SC) + Evan (Atlanta) Dec 14 events — reps in their own markets independently</div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="dec-7">
+        <td><div class="week-label">Mon Dec 7</div><div class="days">Dec 8–11</div></td>
+        <td><span class="tag tag-ne">New England</span></td>
+        <td>
+          <div><strong>Own territory</strong> — NE field week · year-end push before final event trip</div>
+          <div class="note">📋 Reps finalize prospecting for Dec 14 events independently — Jake in Greenville SC, Evan in Atlanta</div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="dec-14">
+        <td><div class="week-label">Mon Dec 14</div><div class="days">Dec 15–18</div></td>
+        <td><span class="tag tag-squeeze">Jake + Evan (Event Squeeze)</span></td>
+        <td>
+          <div><strong>Greenville, SC (Jake) Tue → Atlanta, GA (Evan) Thu</strong></div>
+          <div class="note">Extended week: depart Mon night, return Fri · ~2.5 hrs Greenville SC → Atlanta</div>
+          <div class="note">TopGolf Greenville SC (Jake/Mid-Atlantic) Tue · TopGolf Atlanta (Evan/Deep South) Thu</div>
+          <div class="note">Mild December weather in SC/GA — warm southern finish to the year</div>
+          <div class="note">📋 Prospecting confirmed: Jake in Greenville SC wk 11/16 + 11/30 · Evan in Atlanta wk 11/16 + 11/30</div>
+          <div class="note">✦ Q4 Jake event #2 — <strong class="check">COVERED</strong> &nbsp;|&nbsp; ✦ Q4 Evan event #2 — <strong class="check">COVERED</strong></div>
+          <div class="note check">Jake + Evan complete Q4 (2 events each) — Jake+Doug Oct · Evan standalone Nov · Jake+Evan Dec</div>
+        </td>
+        <td class="log-cell">
+          <span class="log-item" data-type="flight" onclick="toggleLog(this)">✈ <span class="log-check">✓</span> Flight</span>
+          <span class="log-item" data-type="hotel" onclick="toggleLog(this)">🏨 <span class="log-check">✓</span> Hotel</span>
+          <span class="log-item" data-type="car" onclick="toggleLog(this)">🚗 <span class="log-check">✓</span> Car</span>
+        </td>
+      </tr>
+      <tr data-week="dec-21">
+        <td><div class="week-label">Mon Dec 21</div><div class="days">Dec 22–25</div></td>
+        <td><span class="tag tag-pto">PTO</span></td>
+        <td><div>—</div></td>
+        <td class="log-cell"></td>
+      </tr>
+      <tr data-week="dec-28">
+        <td><div class="week-label">Mon Dec 28</div><div class="days">Dec 29–Jan 1</div></td>
+        <td><span class="tag tag-pto">PTO</span></td>
+        <td><div>—</div></td>
+        <td class="log-cell"></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="month-summary">December: NE + prospecting #2 for Dec 14 (11/30) · NE (12/7) · Greenville SC+Atlanta squeeze — Jake Q4 event #2 + Evan Q4 event #2 (12/14) · 2 PTO · <span class="ne-ok">✓ Warmest markets to close the year · 1 event per rep in Dec — rule satisfied</span></div>
+</div>
+
+<!-- ── SUMMARY ── -->
+<div style="margin-top:28px;">
+  <div class="month-title" style="margin-bottom:14px;">Schedule Summary</div>
+  <div class="summary">
+
+    <div class="stat-group">
+      <h3>Quarterly Report Visits</h3>
+      <div class="stat-row"><span>Q3 · Mid-Atlantic Jake (Winston-Salem)</span><span class="stat-val check">✓ Jul 20</span></div>
+      <div class="stat-row"><span>Q3 · Deep South Evan (Atlanta + Mobile)</span><span class="stat-val check">✓ Aug 31 + Jul 27</span></div>
+      <div class="stat-row"><span>Q3 · NE Corridor Doug (National Harbor)</span><span class="stat-val check">✓ Aug 17</span></div>
+      <div class="stat-row" style="font-size:11px; color:#888; font-weight:700; margin-top:4px">Q3 EVENTS</div>
+      <div class="stat-row"><span>Jake — Greensboro, NC</span><span class="stat-val check">✓ Jul 29 · Jake+Evan squeeze wk 7/27</span></div>
+      <div class="stat-row"><span>Evan — Mobile, AL</span><span class="stat-val check">✓ Jul 31 · Jake+Evan squeeze wk 7/27</span></div>
+      <div class="stat-row"><span>Doug — National Harbor, MD</span><span class="stat-val check">✓ Aug 19</span></div>
+      <div class="stat-row"><span>Doug — Parsippany, NJ</span><span class="stat-val check">✓ Sep 16</span></div>
+      <div class="stat-row" style="font-size:11px; color:#888; font-weight:700; margin-top:4px">Q4 EVENTS — 1 per rep per month · 2-week prospecting required · cross-territory only</div>
+      <div class="stat-row"><span>Jake — Richmond, VA (Oct)</span><span class="stat-val check">✓ Oct 12 w/ Doug squeeze</span></div>
+      <div class="stat-row"><span>Doug — Germantown, MD (Oct)</span><span class="stat-val check">✓ Oct 12 w/ Jake squeeze</span></div>
+      <div class="stat-row"><span>Evan — New Orleans, LA (Nov)</span><span class="stat-val check">✓ Nov 9 standalone</span></div>
+      <div class="stat-row"><span>Doug — Pittsburgh, PA (Q4 #2)</span><span class="stat-val warn">⚠ TBD — coordinate w/ Doug</span></div>
+      <div class="stat-row"><span>Jake — Greenville, SC (Dec)</span><span class="stat-val check">✓ Dec 14 w/ Evan squeeze</span></div>
+      <div class="stat-row"><span>Evan — Atlanta, GA (Dec)</span><span class="stat-val check">✓ Dec 14 w/ Jake squeeze</span></div>
+    </div>
+
+    <div class="stat-group">
+      <h3>Monthly Cadence (1T · 2NE · 1WFH)</h3>
+      <div class="stat-row"><span>July</span><span class="stat-val bad">1 NE · Portland · Jake Q3 · Evan Q3 — no WFH</span></div>
+      <div class="stat-row"><span>August</span><span class="stat-val warn">1 NE · Summit · Doug event · Knoxville peer · Evan Atlanta</span></div>
+      <div class="stat-row"><span>September</span><span class="stat-val warn">NE (9/7) · Doug Parsippany event · 2 PTO</span></div>
+      <div class="stat-row"><span>October</span><span class="stat-val check">✓ WFH · Jake+Doug event squeeze · 2 NE</span></div>
+      <div class="stat-row"><span>November</span><span class="stat-val check">✓ SEMA · Evan New Orleans event · 1 NE · Thanksgiving</span></div>
+      <div class="stat-row"><span>December</span><span class="stat-val check">✓ 2 NE · Jake+Evan squeeze (SC/GA) · 2 PTO</span></div>
+    </div>
+
+    <div class="stat-group">
+      <h3>Overnight Travel by Month</h3>
+      <div class="stat-row"><span>July</span><span class="stat-val">3 overnight (Portland, Jake/Winston-Salem, Evan/Mobile)</span></div>
+      <div class="stat-row"><span>August</span><span class="stat-val">4 overnight (Houston, Doug/Nat Harbor, Knoxville peer, Evan/Atlanta)</span></div>
+      <div class="stat-row"><span>September</span><span class="stat-val">1 overnight (Doug/Parsippany)</span></div>
+      <div class="stat-row"><span>October</span><span class="stat-val">1 overnight (Richmond+Germantown squeeze)</span></div>
+      <div class="stat-row"><span>November</span><span class="stat-val">2 overnight (SEMA, Evan/New Orleans)</span></div>
+      <div class="stat-row"><span>December</span><span class="stat-val">1 overnight (Greenville SC+Atlanta squeeze)</span></div>
+    </div>
+
+    <div class="stat-group">
+      <h3>🎯 Confirmed TopGolf Events</h3>
+      <div class="stat-row" style="flex-direction:column; align-items:flex-start; gap:6px;">
+        <div class="note" style="font-size:11px; color:#888; font-style:italic">Goal: 2 events per territory per quarter · attend all team events</div>
+        <div class="note"><strong>Doug — National Harbor, MD</strong> · Aug 19 · <span class="check">Aaron leading ✓</span></div>
+        <div class="note"><strong>Doug — Parsippany, NJ</strong> · Sep 16 · <span class="check">Aaron attending ✓</span></div>
+        <div class="note warn"><strong>Jake — Greensboro, NC</strong> · wk of Jul 27 · <span class="warn">⚠ conflict — Aaron at Evan's Mobile event</span></div>
+        <div class="note"><strong>Evan — Mobile, AL</strong> · Jul 29 · <span class="check">Aaron attending ✓</span></div>
+        <div class="note note-flag">⚑ Jake needs a 2nd Q3 event; Aaron to attend — coordinate date</div>
+        <div class="note note-flag">⚑ Doug Q4 event #2 (Pittsburgh) TBD — needs booking + 2-week prospecting window</div>
+      </div>
+    </div>
+
+    <div class="stat-group">
+      <h3>💡 Cross-Territory Event Squeeze Pairings</h3>
+      <div class="stat-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
+        <div class="note check" style="font-weight:700">Rule: Tue event in one territory → Thu event in adjacent territory · always cross-territory, never same-rep doubling</div>
+        <div class="note check" style="font-weight:700">Each squeeze week = 2 events across 2 reports + 1 freed week downstream</div>
+
+        <div class="note" style="margin-top:4px; font-size:11px; color:#888; font-weight:700; text-transform:uppercase; letter-spacing:.05em">Jake + Evan (Mid-Atlantic ↔ Deep South)</div>
+        <div class="note"><strong>⭐ ✓ Greenville, SC → Atlanta, GA</strong> · ~2.5 hrs · confirmed Dec 14</div>
+        <div class="note"><strong>Charlotte, NC → Atlanta, GA</strong> · ~4 hrs · extended drive, doable Mon–Fri week</div>
+        <div class="note"><strong>Columbia, SC → Augusta, GA</strong> · ~1.5 hrs · tightest pairing, SC/GA border</div>
+        <div class="note"><strong>Charlotte, NC → Birmingham, AL</strong> · ~3.5 hrs · covers AL market</div>
+
+        <div class="note" style="margin-top:4px; font-size:11px; color:#888; font-weight:700; text-transform:uppercase; letter-spacing:.05em">Jake + Doug (Mid-Atlantic ↔ NE Corridor)</div>
+        <div class="note"><strong>⭐ ✓ Richmond, VA → Germantown, MD</strong> · ~2 hrs · confirmed Oct 12 ✓</div>
+        <div class="note"><strong>Richmond, VA → King of Prussia, PA</strong> · ~3 hrs · future option · extends into PA market</div>
+        <div class="note" style="font-size:11px; color:#888; font-style:italic">Note: Baltimore TopGolf opens Q2 2027 — future Richmond→Baltimore option</div>
+        <div class="note"><strong>Southern CT/RI (NE) Mon AM → Doug's NJ/MD Mon PM departure</strong> · zero extra day</div>
+
+        <div class="note" style="margin-top:4px; font-size:11px; color:#888; font-weight:700; text-transform:uppercase; letter-spacing:.05em">Evan Standalone Markets</div>
+        <div class="note"><strong>⭐ ✓ New Orleans, LA</strong> · confirmed Nov 9 · covers LA market</div>
+        <div class="note"><strong>⭐ ✓ Atlanta, GA</strong> · confirmed Dec 14 (squeeze w/ Jake) · territory hub</div>
+        <div class="note"><strong>Birmingham, AL</strong> · central AL · future standalone or Jake squeeze</div>
+        <div class="note"><strong>Baton Rouge, LA</strong> · covers south LA · future standalone option</div>
+        <div class="note"><strong>Mobile, AL</strong> · used Q3 2026 — off table for rest of year</div>
+
+        <div class="note note-flag" style="margin-top:4px;">⚑ No venue used more than once per year — used venues (National Harbor, Parsippany, Knoxville, Greensboro, Mobile, Richmond, Germantown, New Orleans, Greenville SC, Atlanta) are off the table for all future planning this year</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function toggleLog(el) {
+    el.classList.toggle('log-done');
+    var row = el.closest('tr');
+    var week = row ? row.dataset.week : '';
+    var type = el.dataset.type;
+    if (week) {
+      localStorage.setItem('log_' + week + '_' + type, el.classList.contains('log-done') ? '1' : '0');
+    }
+  }
+
+  document.querySelectorAll('.log-item').forEach(function(el) {
+    var row = el.closest('tr');
+    var week = row ? row.dataset.week : '';
+    var type = el.dataset.type;
+    if (week && localStorage.getItem('log_' + week + '_' + type) === '1') {
+      el.classList.add('log-done');
+    }
+  });
+</script>
+
+</body>
+</html>
